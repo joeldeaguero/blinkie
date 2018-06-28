@@ -29,12 +29,12 @@ def checkStatus(axis):
 		"n", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"))
 	return True
 
-def sendStringCommand(cmd)
+def sendStringCommand(cmd):
 	if !checkStatus():
 		return
 	send("%c%s%c".format(2, cmd, 3))
 
-def sendHome()
+def sendHome():
 	sendStringCommand("3o070000000077")
 
 def sendTestCommand():

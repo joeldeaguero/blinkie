@@ -18,28 +18,32 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
-	sum = a + b + c + d + e + f + g + h + i + j + k + l
+	sum = (ord(a) + ord(b) + ord(c) + ord(d) + ord(e) + ord(f) + 
+		ord(g) + ord(h) + ord(i) + ord(j) + ord(k) + ord(l))
 	comp = twos_comp(sum, 16)
 	check = comp & 255
 	return "%c%c%c%c%c%c%c%c%c%c%c%c%c".format(a,b,c,d,e,f,g,h,i,j,k,l,check)
 
 # axis: 0-15
 def checkStatus(axis):
-	sendStringCommand(makeCommand("%c".format("0" + axis), 
-		"n", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"))
+	sendStringCommand(makeCommand(chr(ord('0') + axis), 
+		'n', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'))
 	return True
 
+def send(str):
+	port.write(str)
+
 def sendStringCommand(cmd):
-	if (!checkStatus()):
-		return
 	send("%c%s%c".format(2, cmd, 3))
 
 def sendHome():
 	sendStringCommand("3o070000000077")
 
 def sendTestCommand():
-	sendHome()
+	checkStatus(0)
+	#sendHome()
 
-while True:
+#while True:
 	#test()
-	sendTestCommand()
+sendTestCommand()
+

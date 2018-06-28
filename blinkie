@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# run with hot reloading; not always desirable
+# find . -name *.py | entr -r python main.py
+
+# run once
+python main.py

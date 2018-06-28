@@ -1,5 +1,8 @@
 # blinkie
-![blinkie](https://raw.githubusercontent.com/joeldeaguero/blinkie/master/blinkie.png)
+![blinkie](https://raw.githubusercontent.com/joeldeaguero/blinkie/master/blinkie.png | width = 200)
+
+git clone https://github.com/joeldeaguero/blinkie.git
+./blinkie
 
 Setting up a new raspberry pi:
 * passwd

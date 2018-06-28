@@ -30,7 +30,7 @@ def checkStatus(axis):
 	return True
 
 def sendStringCommand(cmd):
-	if !checkStatus():
+	if (!checkStatus()):
 		return
 	send("%c%s%c".format(2, cmd, 3))
 

@@ -1,10 +1,11 @@
 import serial
 
+responseSizeExpected = 16 # docs only specify 15, but that makes no sense
 serialBaud = 38400
-serialTimeout = 3.0
+serialTimeout = 2.0
 #serialPort="/dev/ttyAMA0"
-serialPort="/dev/serial0"
-#serialPort="COM1"
+#serialPort="/dev/serial0"
+serialPort="COM1"
 
 port = serial.Serial(serialPort, baudrate=serialBaud, timeout=serialTimeout)
 
@@ -37,7 +38,7 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
 	check = comp & 0xff
 	c_hi = (check >> 8) & 0xf
 	c_lo = check & 0xf
-	return "%c%c%c%c%c%c%c%c%c%c%c%c%c".format(
+	return "%s%s%s%s%s%s%s%s%s%s%s%s%x%x" % (
 		a,
 		b,
 		c,
@@ -50,8 +51,8 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
 		j,
 		k,
 		l,
-		chr(c_hi),
-		chr(c_lo))
+		c_hi,
+		c_lo)
 
 # axis: 0-15
 def checkStatus(axis):
@@ -59,18 +60,33 @@ def checkStatus(axis):
 		'n', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'))
 	return True
 
+def recv():
+	response = port.read(responseSizeExpected)
+	#port.flush()
+	lenResponse = len(response)
+	commentary = ""
+	if (lenResponse == 0):
+		commentary = (", waited %f sec for %d bytes" % 
+			(serialTimeout, responseSizeExpected))
+	print ("pi <- %s <- robot (len=%d%s)\n" % 
+		(response, lenResponse, commentary))
+	
 def send(str):
+	print "pi -> %s -> robot (len=%d)\n" % (str, len(str))
 	port.write(str)
+	#port.flush()
+	response = recv()
+	return response
 
 def sendStringCommand(cmd):
-	send("%c%s%c".format(2, cmd, 3))
+	return send("%c%s%c" % (chr(2), cmd, chr(3)))
 
 def sendHome():
-	sendStringCommand("3o070000000077")
+	return sendStringCommand("3o070000000077")
 
 def sendTestCommand():
 	checkStatus(0)
-	#sendHome()
+	sendHome()
 
 #while True:
 	#test()

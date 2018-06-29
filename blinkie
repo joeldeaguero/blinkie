@@ -4,4 +4,4 @@
 # find . -name *.py | entr -r python main.py
 
 # run once
-python main.py
+sudo python main.py

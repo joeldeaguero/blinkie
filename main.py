@@ -4,6 +4,7 @@ serialBaud = 38400
 serialTimeout = 3.0
 #serialPort="/dev/ttyAMA0"
 serialPort="/dev/serial0"
+#serialPort="COM1"
 
 port = serial.Serial(serialPort, baudrate=serialBaud, timeout=serialTimeout)
 
@@ -18,11 +19,39 @@ def twos_comp(val, bits):
     return val                         # return positive value as is
 
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
-	sum = (ord(a) + ord(b) + ord(c) + ord(d) + ord(e) + ord(f) + 
-		ord(g) + ord(h) + ord(i) + ord(j) + ord(k) + ord(l))
+	sum = (
+		ord(a) + 
+		ord(b) + 
+		ord(c) + 
+		ord(d) + 
+		ord(e) + 
+		ord(f) + 
+		ord(g) + 
+		ord(h) + 
+		ord(i) + 
+		ord(j) + 
+		ord(k) + 
+		ord(l)
+	)
 	comp = twos_comp(sum, 16)
-	check = comp & 255
-	return "%c%c%c%c%c%c%c%c%c%c%c%c%c".format(a,b,c,d,e,f,g,h,i,j,k,l,check)
+	check = comp & 0xff
+	c_hi = (check >> 8) & 0xf
+	c_lo = check & 0xf
+	return "%c%c%c%c%c%c%c%c%c%c%c%c%c".format(
+		a,
+		b,
+		c,
+		d,
+		e,
+		f,
+		g,
+		h,
+		i,
+		j,
+		k,
+		l,
+		chr(c_hi),
+		chr(c_lo))
 
 # axis: 0-15
 def checkStatus(axis):

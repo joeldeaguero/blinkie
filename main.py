@@ -4,8 +4,8 @@ responseSizeExpected = 16 # docs only specify 15, but that makes no sense
 serialBaud = 38400
 serialTimeout = 2.0
 #serialPort="/dev/ttyAMA0"
-#serialPort="/dev/serial0"
-serialPort="COM1"
+serialPort="/dev/serial0"
+#serialPort="COM1"
 
 port = serial.Serial(serialPort, baudrate=serialBaud, timeout=serialTimeout)
 

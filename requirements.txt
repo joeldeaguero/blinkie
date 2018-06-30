@@ -1,0 +1,15 @@
+appdirs==1.4.3
+asyncio==3.4.3
+attrs==18.1.0
+black==18.6b4
+click==6.7
+future==0.16.0
+iso8601==0.1.12
+prompt-toolkit==2.0.3
+pyserial==3.4
+PyYAML==3.12
+serial==0.0.66
+six==1.11.0
+toml==0.9.4
+urwid==2.0.1
+wcwidth==0.1.7

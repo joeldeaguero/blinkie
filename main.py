@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import prompt_toolkit
 from prompt_toolkit.application import Application
 from prompt_toolkit.eventloop import use_asyncio_event_loop
 from prompt_toolkit.key_binding import KeyBindings

@@ -12,10 +12,14 @@ lineCount = 6
 def handleHome():
     checkStatus(0)
     sendHome()
+    
+def handleStatus():
+	checkStatus(0)
 
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
+	Button("status", handler=handleStatus),
     Button("home", handler=handleHome)
 ])
 testCommandContainer = Box(
@@ -86,24 +90,6 @@ def twos_comp(val, bits):
     return val  # return positive value as is
 
 
-def fcntl(fd, op, arg=0):
-    return 0
-
-
-def ioctl(fd, op, arg=0, mutable_flag=True):
-    if mutable_flag:
-        return 0
-    else:
-        return ""
-
-
-def flock(fd, op):
-    return
-
-
-def lockf(fd, operation, length=0, start=0, whence=0):
-    return
-
 
 class SerialToGui(serial.threaded.Protocol):
     def __init__(self):
@@ -112,7 +98,7 @@ class SerialToGui(serial.threaded.Protocol):
     def __call__(self):
         return self
 
-    def data_received(self, data):
+    def connection_lost(self, exc):
         global bytesReceivedText
         prev = bytesReceivedText.text
         oldLines = prev.split("\n")
@@ -121,8 +107,39 @@ class SerialToGui(serial.threaded.Protocol):
             newLines = "\n".join(oldLines[num-lineCount:])
         else:
             newLines = prev
-        my_str_as_bytes = data.encode()
-        newLines += "{0}\n".format(my_str_as_bytes.hex())
+        newLines += "connection lost\n"
+        print("connection_lost: {0}\n".format(exc))
+        bytesReceivedText.text = newLines
+
+    def connection_made(self, transport):
+        global bytesReceivedText
+        prev = bytesReceivedText.text
+        oldLines = prev.split("\n")
+        num=len(oldLines)
+        if (num > lineCount):
+            newLines = "\n".join(oldLines[num-lineCount:])
+        else:
+            newLines = prev
+        newLines += "connection made\n"
+        print("connection_made: {0}\n".format(transport))
+        bytesReceivedText.text = newLines
+		
+    def data_received(self, data):
+        print("{0}\n".format(data.hex()))
+        global bytesReceivedText
+        prev = bytesReceivedText.text
+        oldLines = prev.split("\n")
+        num=len(oldLines)
+        oldLast = oldLines[num - 1]
+        if (len(oldLast) >= 16):
+            oldLast += "\n"
+        oldLast += "{0}".format(data.hex())
+        if (num > lineCount):
+            newLines = "\n".join(oldLines[num-lineCount:num-1])
+        else:
+            newLines = "\n".join(oldLines[:num-1])
+        newLines += "\n"
+        newLines += oldLast
         bytesReceivedText.text = newLines
 
 
@@ -142,7 +159,7 @@ def init():
         type=int,
         nargs="?",
         help="set baud rate, default: %(default)s",
-        default="38400",
+        default=38400,
         dest="baudRate",
     )
     group = parser.add_argument_group("serial port")
@@ -206,10 +223,11 @@ def init():
         sys.stderr.write(errMsg)
         sys.exit(1)
 
+    print("open")
     ser_to_gui = SerialToGui()
     serial_worker = serial.threaded.ReaderThread(ser, ser_to_gui)
-    serial_worker.start()
-
+    serial_worker.run()
+    print("listening")
 
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     sum = (
@@ -271,6 +289,7 @@ def send(str):
     my_str_as_bytes = str.encode()
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
+    print("write: {0}\n", my_str_as_bytes.hex())
     ser.write(my_str_as_bytes)
 
 
@@ -280,7 +299,5 @@ def sendStringCommand(cmd):
 
 def sendHome():
     sendStringCommand("3o070000000077")
-
-
 
 main()

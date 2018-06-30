@@ -1,7 +1,6 @@
 appdirs==1.4.3
 asyncio==3.4.3
 attrs==18.1.0
-black==18.6b4
 click==6.7
 future==0.16.0
 prompt-toolkit==2.0.3

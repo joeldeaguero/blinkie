@@ -112,17 +112,17 @@ class SerialToGui(serial.threaded.Protocol):
         return self
 
     def data_received(self, data):
-		global bytesReceivedText
-		prev = bytesReceivedText.text
-		oldLines = prev.split("\n")
-		num=len(oldLines)
-		if (num > lineCount):
-			newLines = "\n".join(oldLines[num-lineCount:])
-		else:
-			newLines = prev
-		my_str_as_bytes = data.encode()
-		newLines += "{0}\n".format(my_str_as_bytes.hex())
-		bytesReceivedText.text = newLines
+        global bytesReceivedText
+        prev = bytesReceivedText.text
+        oldLines = prev.split("\n")
+        num=len(oldLines)
+        if (num > lineCount):
+            newLines = "\n".join(oldLines[num-lineCount:])
+        else:
+            newLines = prev
+        my_str_as_bytes = data.encode()
+        newLines += "{0}\n".format(my_str_as_bytes.hex())
+        bytesReceivedText.text = newLines
 
 
 def init():

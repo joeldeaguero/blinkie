@@ -8,19 +8,20 @@ from prompt_toolkit.widgets import Box, Button, Frame, TextArea
 import asyncio
 
 lineCount = 6
+debugAxis = 1
 
 def handleHome():
-    checkStatus(0)
+    checkStatus(debugAxis)
     sendHome()
-    
+
 def handleStatus():
-	checkStatus(0)
+	checkStatus(debugAxis)
 
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
-	Button("status", handler=handleStatus),
-    Button("home", handler=handleHome)
+    Button("home", handler=handleHome),
+	Button("status", handler=handleStatus)
 ])
 testCommandContainer = Box(
     Frame(testCommands, width=20, height=20)
@@ -82,7 +83,7 @@ import sys
 # docs only specify 15, but that makes no sense
 responseSizeExpected = 16
 ser = None
-
+buf = ""
 
 def twos_comp(val, bits):
     if (val & (1 << (bits - 1))) != 0:  # if sign bit is set e.g., 8bit: 128-255
@@ -108,7 +109,7 @@ class SerialToGui(serial.threaded.Protocol):
         else:
             newLines = prev
         newLines += "connection lost\n"
-        print("connection_lost: {0}\n".format(exc))
+        #print("connection_lost: {0}\n".format(exc))
         bytesReceivedText.text = newLines
 
     def connection_made(self, transport):
@@ -121,27 +122,16 @@ class SerialToGui(serial.threaded.Protocol):
         else:
             newLines = prev
         newLines += "connection made\n"
-        print("connection_made: {0}\n".format(transport))
-        bytesReceivedText.text = newLines
-		
-    def data_received(self, data):
-        print("{0}\n".format(data.hex()))
-        global bytesReceivedText
-        prev = bytesReceivedText.text
-        oldLines = prev.split("\n")
-        num=len(oldLines)
-        oldLast = oldLines[num - 1]
-        if (len(oldLast) >= 16):
-            oldLast += "\n"
-        oldLast += "{0}".format(data.hex())
-        if (num > lineCount):
-            newLines = "\n".join(oldLines[num-lineCount:num-1])
-        else:
-            newLines = "\n".join(oldLines[:num-1])
-        newLines += "\n"
-        newLines += oldLast
+        #print("connection_made: {0}\n".format(transport))
         bytesReceivedText.text = newLines
 
+    def data_received(self, data):
+        global buf
+        global bytesReceivedText
+        buf = buf + data.hex()
+        if (len(buf) >= 16):
+            bytesReceivedText.text = buf
+            buf = ""
 
 def init():
     global ser
@@ -159,7 +149,7 @@ def init():
         type=int,
         nargs="?",
         help="set baud rate, default: %(default)s",
-        default=38400,
+        default="38400",
         dest="baudRate",
     )
     group = parser.add_argument_group("serial port")
@@ -217,17 +207,18 @@ def init():
             parity=args.parity,
             xonxoff=args.xonxoff,
             rtscts=args.rtscts,
+            timeout=3.0
         )
     except serial.SerialException as e:
         errMsg = "Could not open serial port {}: {}\n".format(ser.name, e)
         sys.stderr.write(errMsg)
         sys.exit(1)
 
-    print("open")
+    #print("open")
     ser_to_gui = SerialToGui()
     serial_worker = serial.threaded.ReaderThread(ser, ser_to_gui)
-    serial_worker.run()
-    print("listening")
+    serial_worker.start()
+    #print("listening")
 
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     sum = (
@@ -289,8 +280,10 @@ def send(str):
     my_str_as_bytes = str.encode()
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
-    print("write: {0}\n", my_str_as_bytes.hex())
-    ser.write(my_str_as_bytes)
+    #print("write: {0}\n", my_str_as_bytes.hex())
+    inverted = [(~b)&255 for b in my_str_as_bytes]
+    ser.write(inverted)
+    #ser.write(my_str_as_bytes)
 
 
 def sendStringCommand(cmd):

@@ -14,3 +14,4 @@ Setting up a new raspberry pi:
     * Enable SPI
     * Enable I2C
     * Enable Serial
+* pip3 install -r requirements.txt

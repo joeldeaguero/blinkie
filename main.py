@@ -8,11 +8,12 @@ from prompt_toolkit.widgets import Box, Button, Frame, TextArea
 import asyncio
 
 lineCount = 6
-debugAxis = 1
+debugAxis = 2
 
 def handleHome():
+    
+    sendHome(debugAxis)
     checkStatus(debugAxis)
-    sendHome()
 
 def handleStatus():
 	checkStatus(debugAxis)
@@ -20,8 +21,9 @@ def handleStatus():
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
-    Button("home", handler=handleHome),
+	Button("home", handler=handleHome),
 	Button("status", handler=handleStatus)
+	
 ])
 testCommandContainer = Box(
     Frame(testCommands, width=20, height=20)
@@ -173,7 +175,7 @@ def init():
         "--xonxoff",
         action="store_true",
         help="enable software flow control (default off)",
-        default=False,
+        default=True,
     )
 
     group.add_argument(
@@ -220,26 +222,32 @@ def init():
     serial_worker.start()
     #print("listening")
 
+# BCC lsb calculator to check communication integrity
+def bcc_calc(bcc_int):
+	bcc = (~bcc_int & 0xFFF) + 1        # 2's complement calculation (= one's complement + 1)
+	for i in range(11, 7, -1):
+		if bcc > 2**i:
+			bcc -= 2**i                 # takes the LSB of the integer
+	bcc = hex(bcc).upper()[2:]          # converts the integer to hex characters
+	if len(bcc) == 1: bcc = '0' + bcc   # protocol needs BCC to be two characters
+	return bcc
+        
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
-    sum = (
-        ord(a)
-        + ord(b)
-        + ord(c)
-        + ord(d)
-        + ord(e)
-        + ord(f)
-        + ord(g)
-        + ord(h)
-        + ord(i)
-        + ord(j)
-        + ord(k)
-        + ord(l)
-    )
-    comp = twos_comp(sum, 16)
-    check = comp & 0xff
-    c_hi = (check >> 8) & 0xf
-    c_lo = check & 0xf
-    return "%s%s%s%s%s%s%s%s%s%s%s%s%x%x" % (
+    bcc_int = 0
+    bcc_int += ord(a)
+    bcc_int += ord(b)
+    bcc_int += ord(c)
+    bcc_int += ord(d)
+    bcc_int += ord(e)
+    bcc_int += ord(f)
+    bcc_int += ord(g)
+    bcc_int += ord(h)
+    bcc_int += ord(i)
+    bcc_int += ord(j)
+    bcc_int += ord(k)
+    bcc_int += ord(l)
+    bcc = bcc_calc(bcc_int)
+    return "%s%s%s%s%s%s%s%s%s%s%s%s%s" % (
         a,
         b,
         c,
@@ -252,8 +260,7 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
         j,
         k,
         l,
-        c_hi,
-        c_lo,
+        bcc
     )
 
 
@@ -281,16 +288,22 @@ def send(str):
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
     #print("write: {0}\n", my_str_as_bytes.hex())
-    inverted = [(~b)&255 for b in my_str_as_bytes]
-    ser.write(inverted)
-    #ser.write(my_str_as_bytes)
+    #inverted = [(~b)&255 for b in my_str_as_bytes]
+    #ser.write(inverted)
+    ser.write(my_str_as_bytes)
 
 
 def sendStringCommand(cmd):
     send("%c%s%c" % (chr(2), cmd, chr(3)))
 
 
-def sendHome():
-    sendStringCommand("3o070000000077")
+def sendHome(axis):
+	sendStringCommand(
+		makeCommand(chr(ord("0") + axis), "o", "0", "7", "0","0","0","0","0","0","0","0")
+		)
 
+def bccChecker():
+	print(makeCommand("1","Q","3","0","1","0","6","0","0","0","0","0"))
+	
+bccChecker()
 main()

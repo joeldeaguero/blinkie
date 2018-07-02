@@ -9,6 +9,8 @@ import asyncio
 
 lineCount = 6
 debugAxis = 2
+bytesSentText = TextArea(text="")
+bytesReceivedText = TextArea(text="")
 
 
 def handleHome():
@@ -18,6 +20,12 @@ def handleHome():
 	
 def handleStatus():
 	checkStatus(debugAxis)
+	
+def handleClear():
+	global bytesSentText
+	global bytesReceivedText
+	bytesSentText.text = ""
+	bytesReceivedText.text = ""
 
 # Key bindings.
 kb = KeyBindings()
@@ -29,21 +37,24 @@ def keyHome(event):
 @kb.add('s')
 def keyStatus(event):
 	handleStatus()
+	
+@kb.add('c')
+def keyClear(event):
+	handleClear()
 
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
 	Button("Home", handler=handleHome),
-	Button("Status", handler=handleStatus)
+	Button("Status", handler=handleStatus),
+	Button("Clear", handler=handleClear)
 ])
 testCommandContainer = Box(
     Frame(testCommands, width=20, height=20)
 )
-bytesSentText = TextArea(text="")
 sendMonitor = Box(
     Frame(bytesSentText, width=56, height=10)
 )
-bytesReceivedText = TextArea(text="")
 recvMonitor = Box(
     Frame(bytesReceivedText, width=56, height=10)
 )

@@ -265,21 +265,7 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     bcc_int += ord(k)
     bcc_int += ord(l)
     bcc = bcc_calc(bcc_int)
-    return "%s%s%s%s%s%s%s%s%s%s%s%s%s" % (
-        a,
-        b,
-        c,
-        d,
-        e,
-        f,
-        g,
-        h,
-        i,
-        j,
-        k,
-        l,
-        bcc
-    )
+    return b"".join([a,b,c,d,e,f,g,h,i,j,k,l,bcc])
 
 
 # axis: 0-15
@@ -305,9 +291,6 @@ def send(str):
     my_str_as_bytes = str.encode()
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
-    #print("write: {0}\n", my_str_as_bytes.hex())
-    #inverted = [(~b)&255 for b in my_str_as_bytes]
-    #ser.write(inverted)
     ser.write(my_str_as_bytes)
 
 

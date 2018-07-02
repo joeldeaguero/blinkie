@@ -262,7 +262,12 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     bcc_int += ord(k)
     bcc_int += ord(l)
     bcc = bcc_calc(bcc_int)
-    return b"".join([a,b,c,d,e,f,g,h,i,j,k,l,bcc])
+    return b"".join([
+        ord(a),ord(b),ord(c),ord(d),
+        ord(e),ord(f),ord(g),ord(h),
+        ord(i),ord(j),ord(k),ord(l),
+        ord(bcc[0]),ord(bcc[1])
+    ])
 
 
 # axis: 0-15

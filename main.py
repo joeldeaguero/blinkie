@@ -10,20 +10,31 @@ import asyncio
 lineCount = 6
 debugAxis = 2
 
+
 def handleHome():
-    
     sendHome(debugAxis)
     checkStatus(debugAxis)
 
+	
 def handleStatus():
 	checkStatus(debugAxis)
+
+# Key bindings.
+kb = KeyBindings()
+
+@kb.add('h')
+def keyHome(event):
+	handleHome()
+	
+@kb.add('s')
+def keyStatus(event):
+	handleStatus()
 
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
-	Button("home", handler=handleHome),
-	Button("status", handler=handleStatus)
-	
+	Button("Home", handler=handleHome),
+	Button("Status", handler=handleStatus)
 ])
 testCommandContainer = Box(
     Frame(testCommands, width=20, height=20)
@@ -51,10 +62,6 @@ clientArea = Box(
 layout = Layout(container=clientArea)
 
 
-# Key bindings.
-kb = KeyBindings()
-
-
 @kb.add("c-c")
 def _(event):
     " Quit when control-c is pressed. "
@@ -62,7 +69,7 @@ def _(event):
 
 
 # Build a main application object.
-application = Application(layout=layout, key_bindings=kb, full_screen=True)
+application = Application(layout=layout, key_bindings=kb, full_screen=True, mouse_support=True)
 
 
 def main():

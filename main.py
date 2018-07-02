@@ -262,6 +262,7 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     bcc_int += ord(k)
     bcc_int += ord(l)
     bcc = bcc_calc(bcc_int)
+    print("{0}, {1}, {2}\n".format(type(bcc), type(bcc[0]), bcc))
     return b"".join([
         ord(a),ord(b),ord(c),ord(d),
         ord(e),ord(f),ord(g),ord(h),

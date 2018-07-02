@@ -267,7 +267,7 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
         ord(a),ord(b),ord(c),ord(d),
         ord(e),ord(f),ord(g),ord(h),
         ord(i),ord(j),ord(k),ord(l),
-        ord(bcc[0]),ord(bcc[1])
+        bcc[0],bcc[1]
     ])
 
 

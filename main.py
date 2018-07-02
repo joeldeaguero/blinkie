@@ -146,12 +146,9 @@ class SerialToGui(serial.threaded.Protocol):
         bytesReceivedText.text = newLines
 
     def data_received(self, data):
-        global buf
         global bytesReceivedText
-        buf = buf + data.hex()
-        if (len(buf) >= 16):
-            bytesReceivedText.text = buf
-            buf = ""
+        bytesReceivedText.text = string.replace(bytesReceivedText.text[-32:], 
+            "\n", "") + "\n" + data.hex()
 
 def init():
     global ser

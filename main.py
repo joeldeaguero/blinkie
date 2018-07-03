@@ -6,16 +6,19 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout, VSplit, HSplit
 from prompt_toolkit.widgets import Box, Button, Frame, TextArea
 import asyncio
+import time
 
 lineCount = 6
-debugAxis = 2
+debugAxis = 0
+debugSleep = 0.2
 bytesSentText = TextArea(text="")
 bytesReceivedText = TextArea(text="")
 
 
 def handleHome():
-    sendHome(debugAxis)
     checkStatus(debugAxis)
+    time.sleep(debugSleep)
+    sendHome(debugAxis)
 
 	
 def handleStatus():
@@ -166,7 +169,7 @@ def init():
         type=int,
         nargs="?",
         help="set baud rate, default: %(default)s",
-        default="38400",
+        default=1200,
         dest="baudRate",
     )
     group = parser.add_argument_group("serial port")
@@ -262,12 +265,21 @@ def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
     bcc_int += ord(k)
     bcc_int += ord(l)
     bcc = bcc_calc(bcc_int)
-    print("{0}, {1}, {2}\n".format(type(bcc), type(bcc[0]), bcc))
-    return b"".join([
-        ord(a),ord(b),ord(c),ord(d),
-        ord(e),ord(f),ord(g),ord(h),
-        ord(i),ord(j),ord(k),ord(l),
-        bcc[0],bcc[1]
+    return bytes([
+		ord(a[0]),
+		ord(b[0]),
+		ord(c[0]),
+		ord(d[0]),
+		ord(e[0]),
+		ord(f[0]),
+		ord(g[0]),
+		ord(h[0]),
+		ord(i[0]),
+		ord(j[0]),
+		ord(k[0]),
+		ord(l[0]),
+        ord(bcc[0]),
+        ord(bcc[1])
     ])
 
 
@@ -291,14 +303,18 @@ def send(str):
         newLines = "\n".join(oldLines[num-lineCount:])
     else:
         newLines = prev
-    my_str_as_bytes = str.encode()
+    my_str_as_bytes = str
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
     ser.write(my_str_as_bytes)
 
 
 def sendStringCommand(cmd):
-    send("%c%s%c" % (chr(2), cmd, chr(3)))
+	myBytes = bytes([2])
+	for i,c in enumerate(cmd):
+		myBytes += bytes([c])
+	myBytes += bytes([3])
+	send(myBytes)
 
 
 def sendHome(axis):

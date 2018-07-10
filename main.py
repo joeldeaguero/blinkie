@@ -9,20 +9,39 @@ import asyncio
 import time
 
 lineCount = 6
-debugAxis = 0
+debugAxis = 2
 debugSleep = 0.2
 bytesSentText = TextArea(text="")
 bytesReceivedText = TextArea(text="")
 
 
 def handleHome():
-    checkStatus(debugAxis)
-    time.sleep(debugSleep)
+   # time.sleep(debugSleep)
     sendHome(debugAxis)
-
+    
+def goAway():
+	goAway(debugAxis)
+	
+def debugAxisX():
+	debugAxisX()
+	
+def debugAxisY():
+	debugAxisY()
+	
+def debugAxisZ():
+	debugAxisZ()
+	
+def enableAxis():
+	enableAxis(debugAxis)
+	
+def setVelocity():
+	setVelocity(debugAxis)	
 	
 def handleStatus():
 	checkStatus(debugAxis)
+
+def moveIncrement():
+	moveIncrement(debugAxis)
 	
 def handleClear():
 	global bytesSentText
@@ -36,11 +55,35 @@ kb = KeyBindings()
 @kb.add('h')
 def keyHome(event):
 	handleHome()
+@kb.add('a')
+def keyAway(event):
+	goAway()
+@kb.add('X')
+def keyX(event):
+	debugAxisX()
+@kb.add('Y')
+def keyY(event):
+	debugAxisY()
+@kb.add('Z')
+def keyZ(event):
+	debugAxisZ()				
 	
 @kb.add('s')
 def keyStatus(event):
 	handleStatus()
+
+@kb.add('q')
+def keyEnable(event):
+	enableAxis()
 	
+@kb.add('v')
+def keyVelocity(event):
+	setVelocity()
+	
+@kb.add('I')
+def keyIncrement(event):	
+	moveIncrement()
+		
 @kb.add('c')
 def keyClear(event):
 	handleClear()
@@ -48,8 +91,16 @@ def keyClear(event):
 # Layout for displaying hello world.
 # (The frame creates the border, the box takes care of the margin/padding.)
 testCommands = HSplit([
-	Button("Home", handler=handleHome),
+	
+	Button("X", handler=debugAxisX),
+	Button("Y", handler=debugAxisY),
+	Button("Z", handler=debugAxisZ), #-default
 	Button("Status", handler=handleStatus),
+	Button("Home", handler=handleHome),
+	Button("Away", handler=goAway),
+	Button("Qenable", handler=enableAxis),
+	Button("Velocity",handler=setVelocity),
+	Button("Increment",handler=moveIncrement),
 	Button("Clear", handler=handleClear)
 ])
 testCommandContainer = Box(
@@ -102,6 +153,10 @@ import argparse
 import serial
 import serial.threaded
 import sys
+import RPi.GPIO as GPIO            # import RPi.GPIO module  
+from time import sleep             # lets us have a delay  
+GPIO.setmode(GPIO.BCM)             # choose BCM or BOARD  
+GPIO.setup(24, GPIO.OUT)           # set GPIO24 as temp RTS
 
 # docs only specify 15, but that makes no sense
 responseSizeExpected = 16
@@ -169,7 +224,7 @@ def init():
         type=int,
         nargs="?",
         help="set baud rate, default: %(default)s",
-        default=1200,
+        default=38400,
         dest="baudRate",
     )
     group = parser.add_argument_group("serial port")
@@ -186,14 +241,14 @@ def init():
         "--rtscts",
         action="store_true",
         help="enable RTS/CTS flow control (default off)",
-        default=False,
+        default=True,
     )
 
     group.add_argument(
         "--xonxoff",
         action="store_true",
         help="enable software flow control (default off)",
-        default=True,
+        default=None,
     )
 
     group.add_argument(
@@ -251,6 +306,7 @@ def bcc_calc(bcc_int):
 	return bcc
         
 def makeCommand(a, b, c, d, e, f, g, h, i, j, k, l):
+  
     bcc_int = 0
     bcc_int += ord(a)
     bcc_int += ord(b)
@@ -306,8 +362,11 @@ def send(str):
     my_str_as_bytes = str
     newLines += "{0}\n".format(my_str_as_bytes.hex())
     bytesSentText.text = newLines
+    GPIO.output(24, 1)         # set GPIO24 to 1/GPIO.HIGH/True  
     ser.write(my_str_as_bytes)
-
+    sleep(0.0045)                 # wait 5mS
+    GPIO.output(24, 0)         # set GPIO24 to 0
+      
 
 def sendStringCommand(cmd):
 	myBytes = bytes([2])
@@ -315,15 +374,49 @@ def sendStringCommand(cmd):
 		myBytes += bytes([c])
 	myBytes += bytes([3])
 	send(myBytes)
+	
+def debugAxisX():
+    global debugAxis
+    debugAxis = 0
+	
+def debugAxisY():
+    global debugAxis
+    debugAxis = 1
+	
+def debugAxisZ():
+    global debugAxis
+    debugAxis = 2
+	
+	
 
 
 def sendHome(axis):
 	sendStringCommand(
 		makeCommand(chr(ord("0") + axis), "o", "0", "7", "0","0","0","0","0","0","0","0")
 		)
-
+def goAway(axis):
+	sendStringCommand(
+		makeCommand(chr(ord("0") + axis), "o", "0", "8", "0","0","0","0","0","0","0","0")
+		)
+		
+def moveIncrement(axis):
+	sendStringCommand(
+		makeCommand(chr(ord("0") + axis), "m", "0", "0", "0","2","1","d","9","5","0","0")
+		)		
+		
+def enableAxis(axis):
+	sendStringCommand(
+		makeCommand(chr(ord("0") + axis), "q", "1", "0", "0","0","0","0","0","0","0","0")
+		)
+def setVelocity(axis):
+	sendStringCommand(
+		makeCommand(chr(ord("0") + axis), "v", "2", "2", "7","1","0","0","1","8","8","0")
+		)
 def bccChecker():
 	print(makeCommand("1","Q","3","0","1","0","6","0","0","0","0","0"))
 	
+  
+  
+  
 bccChecker()
 main()

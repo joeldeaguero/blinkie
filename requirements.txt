@@ -28,7 +28,7 @@ mcpi
 microdotphat==0.2.1
 mote==0.0.3
 motephat==0.0.2
-numpy==1.12.1
+numpy==1.21.0
 oauthlib==2.0.1
 pantilthat==0.0.5
 pgzero==1.2
